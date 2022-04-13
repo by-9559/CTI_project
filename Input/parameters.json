@@ -1,0 +1,22 @@
+{
+    "arguments": [
+        {
+            "group": "",
+            "name": "OCR_PWD",
+            "type": "String",
+            "value": "hC4Q2yZ8p11h186KcC8b6un6ZS2tcAtegOn89HCJy6CurddgTkCzmm7hXCH3mJJt",
+            "direction": "in",
+            "description": "",
+            "isEdit": false
+        },
+        {
+            "group": "",
+            "name": "OCR_ID",
+            "type": "String",
+            "value": "com.huawei.gts.rparobot",
+            "direction": "in",
+            "description": "",
+            "isEdit": false
+        }
+    ]
+}
