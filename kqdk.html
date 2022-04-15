@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>iPSA Touch</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="frame-src 'self'">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/site.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <meta name="wpk-bid" content="dta_1_304428857">
+    <script>
+        !(function(c, i, e, b) {
+            var h = i.createElement("script");
+            var f = i.getElementsByTagName("script")[0];
+            h.type = "text/javascript";
+            h.crossorigin = true;
+            h.onload = function() {
+                c[b] || (c[b] = new c.wpkReporter({
+                    bid: "dta_1_304428857"
+                }));
+                c[b].installAll()
+            };
+            f.parentNode.insertBefore(h, f);
+            h.src = e
+        })(window, document, "https://g.alicdn.com/woodpeckerx/jssdk??wpkReporter.js", "__wpk");
+    </script>
+</head>
+
+<style>
+    body,
+    html {
+        height: 100%;
+        width: 100%;
+    }
+    
+    .loadingContainer {
+        position: fixed;
+        width: 100px;
+        height: 100px;
+        background: rgba(0, 0, 0, .7);
+        left: 50%;
+        margin-left: -40px;
+        top: 30%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    
+    .loadingContainer p {
+        font-size: 12px;
+        color: #ffffff;
+        margin-top: 10px;
+    }
+</style>
+
+<body>
+    <script language="javascript">
+        //防止页面后退
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function() {
+            history.pushState(null, null, document.URL);
+        });
+    </script>
+    <iframe src="./dd_log.html" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" width="0" height="0" allowtransparency="true"></iframe>
+    <!--		<script>
+    if ((/(wxwork)/i.test(navigator.userAgent)) && (/(MicroMessenger)/i.test(navigator.userAgent))) {
+    }else window.location.href = "./hide.html";
+</script>-->
+    <div id="allmap" style="position:absolute;width:100%;height:100%;padding-top:40px;box-sizing:border-box;"></div>
+    <div class="tips  with-top-bar"><img src="img/error.png" width="17" height="17" style="margin:-2px 3px 0 0;" />提示：每部手机只能实现一个员工账号记录考勤数据，杜绝考勤作弊行为。严正声明：只有您在打卡签到时才会记录您的考勤位置！
+    </div>
+    <div class="dakaContent">
+        <a href="javascript:void(0)" class="updaAdd" onclick="updateBtn()" id="updaAdd"></a>
+        <ul class="dakaContentIn">
+            <li class="Infor Infor-up">
+                <img src="img/work_icon.png" class="pull-left" />
+
+                <p class="sbtime">上班</p>
+                <a href="javascript:void(0)" onclick="workTimeClick()" id='btnqd'>签到</a>
+
+                <p class="dktime" id='btnyqd'><img src="img/qiandao.png" width="14" />已签到 <span id='goWorkeTime'></span>
+                </p>
+            </li>
+            <li class="Infor Infor-down">
+                <img src="img/work02_icon.png" class="pull-left" />
+
+                <p class="sbtime">下班</p>
+                <a href="javascript:void(0)" onclick="goHomeClick()" id='btnqt'>签退</a>
+
+                <p class="dktime" id='btnyqt'><img src="img/qiandao.png" width="14" />已签退</p>
+            </li>
+        </ul>
+        <div id="deviceid"></div>
+        <input type="button" value="更新签退" style="display:none;" class="updateReturn" onclick="goHomeClick()" id='btngxqt' />
+    </div>
+    <div class="noGPStips" id="noGPStips" style="display:none;">无法获取您的精确定位，请开启您的定位功能并重新刷新页面获取您的地理位置！</div>
+    <div class="loadingContainer" style="display:none;" id="loading">
+        <img src="img/loading.gif" width="35" height="35" />
+        <p>打卡中...</p>
+    </div>
+
+    <script type="text/javascript">
+        define = null;
+        require = null;
+    </script>
+    <script src="https://g.alicdn.com/dingding/dingtalk-jsapi/2.10.3/dingtalk.open.js"></script>
+    <script src=" ./scripts/vendor/jquery.min.js"></script>
+    <script src="./scripts/crypto-js/aes.js" type="text/javascript"></script>
+    <script src="./scripts/crypto-js/md5.js" type="text/javascript"></script>
+    <script src="./scripts/crypto-js/components/pad-zeropadding-min.js" type="text/javascript"></script>
+    <script src="./scripts/crypto-js/crypto-helper-pkcs7.js" type="text/javascript"></script>
+    <script src="https://pv.sohu.com/cityjson?ie=utf-8"></script>
+    <script src='./scripts/vendor/jssdk.js'></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=6qH1w40knuj9WT70xAzYPYTmIwkqnXue"></script>
+    <script type="text/javascript">
+        // 修改百度3.0版本、防止广告、百度geoc.getLocation方法内部经纬度前移-1.1.0
+        var postdata = {
+            "attencePointLongitude": "",
+            "attencePointLatitude": "",
+            "attencePointAddr": "",
+            "workPlaceLng": "",
+            "workPlaceLat": "",
+            "attencePointName": "",
+            "source": "",
+        };
+        var timeZone = -(new Date().getTimezoneOffset() / 60);
+
+        var baiduPoints = [];
+        var baiduPointsName = [];
+        var sysmi = 0;
+        var empno = 0;
+        var queryall = {};
+        var token = '';
+        var attenceDeviceID = (new Date()).valueOf();
+        var url = window.location.href.split('#')[0];
+        dd.ready(function() {
+            dd.runtime.permission.requestAuthCode({
+                corpId: 'ding6c85a5d894a2406735c2f4657eb6378f', // 企业id
+                onSuccess: function(info) {
+                    code = info.code;
+                    $.ajax({
+                        url: "http://i.isoftstone.com/hwkq/api/ding/get-user-info?wxcode=" + code,
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        success: function(result) {
+                            $.ajax({
+                                url: "http://i.isoftstone.com/hwkq/api/ding/get-config",
+                                type: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                data: JSON.stringify({
+                                    "url": url
+                                }),
+                                success: function(res) {
+                                    dd.config({
+                                        agentId: (res).agentId, // 必填，微应用ID
+                                        corpId: (res).corpId, //必填，企业ID
+                                        timeStamp: (res).timeStamp, // 必填，生成签名的时间戳
+                                        nonceStr: (res).nonceStr, // 必填，生成签名的随机串
+                                        signature: (res).signature, // 必填，签名
+                                        //type: 0, //选填。0表示微应用的jsapi,1表示服务窗的jsapi；不填默认为0。该参数从dingtalk.js的0.8.3版本开始支持
+                                        jsApiList: [
+                                                'device.geolocation.get'
+                                            ] // 必填，需要使用的jsapi列表，注意：不要带dd。
+                                    });
+                                    recordUserLog();
+                                    getUserInfo();
+                                    dd.error(function(err) {
+                                        if (err.errorCode == 4) {
+                                            alert('无法获取你的位置信息');
+                                            return false;
+                                        } else if (err.errorCode == 3) {
+                                            alert(err.errorMessage);
+                                            return false;
+                                        } else {
+                                            alert(JSON.stringify(err))
+                                        }
+                                    });
+
+                                    dd.ready(function() {
+                                        dd.device.base.getUUID({
+                                            onSuccess: function(data) {
+                                                attenceDeviceID = data.uuid
+
+
+                                            },
+                                            onFail: function(err) {
+
+                                            }
+                                        });
+                                        document.querySelector('#updaAdd').click();
+
+                                    })
+
+                                }
+                            })
+                        }
+                    })
+                },
+                onFail: function(err) {
+                    alert("登陆失败");
+                }
+            });
+        });
+
+
+        function getCookie(name) {
+            var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+            if (arr = document.cookie.match(reg))
+                return (arr[2]);
+            else
+                return null;
+        }
+
+
+
+        /*
+         * @desc 记录用户日志
+         * */
+        function recordUserLog() {
+            var userAgent = navigator.userAgent;
+            var userheight = window.screen.height;
+            var userwidth = window.screen.width;
+            var userip = returnCitySN["cip"];
+            var useraddress = returnCitySN["cname"];
+            var url = '';
+            url = decodeURIComponent(window.top.document.URL);
+
+            var devicetype = 'unknown';
+            var uastr = userAgent.toLowerCase();
+            if (uastr.indexOf('android') > -1) {
+                devicetype = 'android';
+                if (uastr.indexOf('wxwork') > -1) {
+                    devicetype = 'wxwork_android';
+                }
+            }
+            if (uastr.indexOf('iphone') > -1) {
+                devicetype = 'iphone';
+                if (uastr.indexOf('wxwork') > -1) {
+                    devicetype = 'wxwork_iphone';
+                }
+            }
+            if (uastr.indexOf('ipad') > -1) devicetype = 'ipad';
+            if (uastr.indexOf('windows nt') > -1) {
+                devicetype = 'windows';
+                if (uastr.indexOf('wxwork') > -1) {
+                    devicetype = 'wxwork_windows';
+                }
+            }
+            if (uastr.indexOf('macintosh') > -1) devicetype = 'mac';
+            var cuDate = new Date();
+
+            var data = {
+                deviceType: devicetype,
+                deviceName: userwidth + '*' + userheight,
+                logua: userAgent,
+                loghttpcode: window.top.document.readyState == "complete" ? "200" : "",
+                logip: userip + '#' + useraddress,
+                type: 3,
+                url: url,
+            }
+            $.ajax({
+                type: "POST",
+                url: "http://i.isoftstone.com/hwkq/api/ding/dd-log",
+                data: JSON.stringify(data),
+                headers: {
+                    'content-type': 'application/json',
+                },
+                success: function(result) {
+
+                },
+                error: function(msg) {
+                    console.log(msg);
+                }
+            });
+
+        }
+
+
+        /*
+         * @desc 获取员工用户信息
+         * */
+        function getUserInfo() {
+            $.ajax({
+                url: 'http://i.isoftstone.com/hwkq/api/ding/get-work-place',
+                type: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify({
+                    "time_zone": timeZone
+                }),
+                success: function(result) {
+                    if (result.ResultCode != 1000) {
+                        {
+                            alert(result.ResultMessage);
+                            return false;
+                        }
+                    } else {
+                        empno = result.number;
+                        token = result.token;
+                        time = result.time;
+                        showText = empno + ' ' + time;
+                        watermark({
+                            watermark_txt: showText
+                        });
+                        var points = result.listPoint;
+                        sysmi = result.attencegroupDistance * 1;
+                        for (var i in points) {
+                            var point = points[i];
+                            baiduPoints.push(new BMap.Point(point.attencegroupPointLongitude, point.attencegroupPointLatitude));
+                            baiduPointsName.push(point.attencegroupPointName)
+
+                            map.addOverlay(new BMap.Circle(baiduPoints[i], result.attencegroupDistance, {
+                                fillColor: "blue",
+                                strokeWeight: 1,
+                                fillOpacity: 0.3,
+                                strokeOpacity: 0.3
+                            }));
+                        }
+                        if (result.sign_in.attenceClockTimeString != 0) {
+                            $("#btnyqd").show();
+                            $("#btnqd").hide();
+                            $("#goWorkeTime").html(result.sign_in.attenceClockTimeString);
+                        } else {
+                            $("#btnqd").show();
+                            $("#btnyqd").hide();
+                        }
+                        if (result.sing_back.attenceClockTimeString != 0) {
+                            $("#btnyqt").show();
+                            $("#btnqt").hide();
+                            $("#btngxqt").show();
+                        } else {
+                            $("#btnqt").show();
+                            $("#btnyqt").hide();
+                            $("#btngxqt").hide();
+                        }
+                    }
+
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    singing = false;
+                    if (XMLHttpRequest.status == 0) {
+                        singing = false;
+                        alert('网络异常，请检查网络');
+                        return;
+                    } else {
+                        singing = false;
+                        alert(errorThrown);
+                        return;
+                    }
+                }
+
+            })
+
+        }
+
+        //初始化百度地图
+        var map = new BMap.Map("allmap");
+        var point = new BMap.Point(116.404, 39.915);
+        var geoMarker; //定位坐标点
+        var text;
+        var localPosition; //当前定位坐标点
+        map.centerAndZoom(point, 10);
+
+        //定义变量
+        var lng //经度
+        var lat //纬度
+            //var objpeople = {}
+
+        //////////////////////////////////////////
+        //////////////转换核心代码////////////////
+        //////////////////////////////////////////
+        var pi = 3.14159265358979324;
+        var a = 6378245.0;
+        var ee = 0.00669342162296594323;
+        var x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+
+        //世界大地坐标转为百度坐标
+        function wgs2bd(lat, lon) {
+            var wgs2gcjR = wgs2gcj(lat, lon);
+            var gcj2bdR = gcj2bd(wgs2gcjR[0], wgs2gcjR[1]);
+            return gcj2bdR;
+        }
+
+        function gcj2bd(lat, lon) {
+            var x = lon,
+                y = lat;
+            var z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * x_pi);
+            var theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * x_pi);
+            var bd_lon = z * Math.cos(theta) + 0.0065;
+            var bd_lat = z * Math.sin(theta) + 0.006;
+            var result = [];
+            result.push(bd_lat);
+            result.push(bd_lon);
+            return result;
+        }
+
+        function bd2gcj(lat, lon) {
+            var x = lon - 0.0065,
+                y = lat - 0.006;
+            var z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
+            var theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
+            var gg_lon = z * Math.cos(theta);
+            var gg_lat = z * Math.sin(theta);
+            var result = [];
+            result.push(gg_lat);
+            result.push(gg_lon);
+            return result;
+        }
+
+        function wgs2gcj(lat, lon) {
+            var dLat = transformLat(lon - 105.0, lat - 35.0);
+            var dLon = transformLon(lon - 105.0, lat - 35.0);
+            var radLat = lat / 180.0 * pi;
+            var magic = Math.sin(radLat);
+            magic = 1 - ee * magic * magic;
+            var sqrtMagic = Math.sqrt(magic);
+            dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi);
+            dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi);
+            var mgLat = lat + dLat;
+            var mgLon = lon + dLon;
+            var result = [];
+            result.push(mgLat);
+            result.push(mgLon);
+            return result;
+        }
+
+        function transformLat(lat, lon) {
+            var ret = -100.0 + 2.0 * lat + 3.0 * lon + 0.2 * lon * lon + 0.1 * lat * lon + 0.2 * Math.sqrt(Math.abs(lat));
+            ret += (20.0 * Math.sin(6.0 * lat * pi) + 20.0 * Math.sin(2.0 * lat * pi)) * 2.0 / 3.0;
+            ret += (20.0 * Math.sin(lon * pi) + 40.0 * Math.sin(lon / 3.0 * pi)) * 2.0 / 3.0;
+            ret += (160.0 * Math.sin(lon / 12.0 * pi) + 320 * Math.sin(lon * pi / 30.0)) * 2.0 / 3.0;
+            return ret;
+        }
+
+        function transformLon(lat, lon) {
+            var ret = 300.0 + lat + 2.0 * lon + 0.1 * lat * lat + 0.1 * lat * lon + 0.1 * Math.sqrt(Math.abs(lat));
+            ret += (20.0 * Math.sin(6.0 * lat * pi) + 20.0 * Math.sin(2.0 * lat * pi)) * 2.0 / 3.0;
+            ret += (20.0 * Math.sin(lat * pi) + 40.0 * Math.sin(lat / 3.0 * pi)) * 2.0 / 3.0;
+            ret += (150.0 * Math.sin(lat / 12.0 * pi) + 300.0 * Math.sin(lat / 30.0 * pi)) * 2.0 / 3.0;
+            return ret;
+        }
+
+        //定位坐标
+        function LocalPosition(latitude, longitude) {
+            if (geoMarker) {
+                map.removeOverlay(geoMarker);
+            }
+            var geoc = new BMap.Geocoder();
+            //localPosition = new BMap.Point(latitude, longitude); //将标注点转化成地图上的点
+            localPosition = new BMap.Point(longitude, latitude); //将标注点转化成地图上的点
+            geoMarker = new BMap.Marker(localPosition); //将点转化成标注点
+            map.addOverlay(geoMarker); //将标注点添加到地图上
+            map.centerAndZoom(localPosition, 17);
+            postdata.attencePointLongitude = localPosition.lng;
+            postdata.attencePointLatitude = localPosition.lat;
+            geoc.getLocation(localPosition, function(rs) {
+                var addComp = rs.addressComponents;
+                postdata.attencePointAddr = text = addComp.city + addComp.district + addComp.street + addComp.streetNumber;
+                //$scope.city = addComp.city;
+                var label = new BMap.Label(text, {
+                    offset: new BMap.Size(20, -10)
+                });
+                label.setStyle({
+                    padding: ".25rem .6rem .2rem",
+                    fontSize: ".6rem",
+                    boxShadow: "0px 0px 3px 0px rgba(0,0,0,0.4)",
+                    maxWidth: "none",
+                    border: 'none',
+                    borderRadius: '30px',
+                    WebkitTransform: 'translateX(-50%)',
+                    marginTop: '-20px',
+                    marginLeft: '-5px'
+                });
+                geoMarker.setLabel(label);
+
+                postdata.attencePointAddr = text
+            });
+        }
+
+        setInterval('updateBtn()', 5000);
+
+        var singing = false; //是否在打卡中
+        //位置比较
+
+        var GetDistance = function(localPosition) {
+            for (var i in baiduPoints) {
+                var mi = Math.round(map.getDistance(baiduPoints[i], localPosition));
+                if (mi <= sysmi) {
+                    //d.attencegroupDistance
+                    singing = false;
+                    postdata.workPlaceLng = baiduPoints[i].lng;
+                    postdata.workPlaceLat = baiduPoints[i].lat;
+                    postdata.attencePointName = baiduPointsName[i];
+                    return true;
+                }
+            }
+            singing = false;
+
+            alert('不在移动考勤打卡范围内，无法打卡。如果定位不准确，请您尝试打开WiFi和蓝牙开关（无需连接），让定位更精准');
+            return false;
+        }
+
+        //获取新的地理位置
+        function updateBtn() {
+            var mapId = 1;
+            var userAgent = navigator.userAgent;
+            var uastr = userAgent.toLowerCase();
+            if (uastr.indexOf('android') > -1) {
+                mapId = 1;
+            }
+            if (uastr.indexOf('iphone') > -1) {
+                mapId = 0;
+            }
+            dd.device.geolocation.get({
+                targetAccuracy: 100,
+                coordinate: mapId,
+                //1：获取高德坐标；
+                //
+                //0：获取标准坐标；推荐使用高德坐标；标准坐标没有 address 字段
+                withReGeocode: false,
+                useCache: true, //默认是true，如果需要频繁获取地理位置，请设置false
+                onSuccess: function(result1) {
+                    var resultbd = '';
+                    if (mapId == 1) {
+                        resultbd = gcj2bd(result1.latitude, result1.longitude);
+                    } else {
+                        resultbd = wgs2bd(result1.latitude, result1.longitude);
+                    }
+                    LocalPosition(resultbd[0], resultbd[1])
+                },
+                onFail: function(err) {
+                    if (err.errorCode == 4) {
+                        alert('无法获取你的位置信息');
+                        return false;
+                    } else if (err.errorCode == 3) {
+                        alert(err.errorMessage);
+                        return false;
+                    } else {
+                        alert(JSON.stringify(err.errorMessage));
+                        return false;
+                    }
+                }
+            });
+
+        }
+        /*
+         * @desc 上班打卡
+         * */
+        function workTimeClick() {
+            singing = false;
+            if (sysmi == -1 || GetDistance(localPosition)) {
+                //提交数据
+                //唯一识别码
+                postdata.attenceDeviceID = attenceDeviceID;
+
+                postdata.attenceType = 1;
+                postdata.attenceRemark = '签到';
+                postdata.token = token;
+                postdata.time_zone = timeZone;
+                postdata.source = 3;
+                var data = JSON.stringify(postdata);
+                var key = CryptoJS.enc.Utf8.parse('1a1a1a1b1e1c1s12');
+                var iv = CryptoJS.enc.Utf8.parse('1111111111111111');
+                var encrypted = CryptoJS.AES.encrypt(data, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.ZeroPadding
+                });
+                var msg = encrypted.toString();
+
+                $.ajax({
+                    type: "POST",
+                    // url: "http://api.isoftstone.com/iSSC/wxapi/v2/save",
+                    url: "http://i.isoftstone.com/hwkq/api/ding/save-attence-record",
+                    data: JSON.stringify({
+                        "data": msg
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    beforeSend: function(XMLHttpRequest) {
+                        $("#loading").show();
+                    },
+                    success: function(result) {
+                        $("#loading").hide();
+                        singing = false;
+                        if (result.ResultCode == 1000) {
+                            $("#btnyqd").show();
+                            $("#btnqd").hide();
+                            $("#goWorkeTime").html(result.attenceClockTimeString);
+                            setTimeout("alert('上班打卡成功')", 300);
+                        } else {
+                            setTimeout(alert(result.ResultMessage), 300);
+                        }
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        $("#loading").hide();
+                        singing = false;
+                        if (XMLHttpRequest.status == 0) {
+                            singing = false;
+                            alert('网络异常，请检查网络');
+                            return;
+                        } else {
+                            singing = false;
+                            alert(errorThrown);
+                            return;
+                        }
+                    }
+                })
+
+            }
+
+        };
+
+        /*
+         * @desc 下班打卡
+         * */
+        function goHomeClick() {
+            if (singing)
+                return; //如果正在打卡则不能重复执行
+            if (sysmi == -1 || GetDistance(localPosition)) {
+                singing = true; //点击按钮当然是正在打卡
+
+                postdata.attenceDeviceID = attenceDeviceID;
+
+                postdata.attenceType = 1;
+                postdata.attenceRemark = '签退';
+                postdata.token = token;
+                postdata.time_zone = timeZone;
+                postdata.source = 3;
+
+                var data = JSON.stringify(postdata);
+                var key = CryptoJS.enc.Utf8.parse('1a1a1a1b1e1c1s12');
+                var iv = CryptoJS.enc.Utf8.parse('1111111111111111');
+                var encrypted = CryptoJS.AES.encrypt(data, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.ZeroPadding
+                });
+                var msg = encrypted.toString();
+                $.ajax({
+                    type: "POST",
+                    //url: "http://e.isoftstone.com/hwkq/api/v1/save-record",
+                    url: "http://i.isoftstone.com/hwkq/api/ding/save-attence-record",
+                    data: JSON.stringify({
+                        "data": msg
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    beforeSend: function(XMLHttpRequest) {
+                        $("#loading").show();
+                    },
+                    success: function(result) {
+                        $("#loading").hide();
+
+                        //result=JSON.parse(result);
+                        //alert(result.ResultCode);
+                        if (result.ResultCode == 1000) {
+                            $("#btnyqt").show();
+                            $("#btnqt").hide();
+                            $("#btngxqt").show();
+                            setTimeout("alert('下班打卡成功')", 300);
+                            singing = false;
+                        } else {
+                            setTimeout(alert(result.ResultMessage), 400);
+                            singing = false;
+                        }
+
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        $("#loading").hide();
+                        singing = false;
+                        if (XMLHttpRequest.status == 0) {
+                            singing = false;
+                            setTimeout("alert('网络异常，请检查网络')", 300);
+                            return;
+                        } else {
+                            singing = false;
+                            alert(errorThrown);
+                            return;
+                        }
+                    }
+                })
+            }
+
+        }
+
+        /*
+         * @desc 获得当前的时间截
+         * */
+        function getTime() {
+            return Math.round(new Date().getTime() / 1000).toString();
+        }
+
+        /*
+         * @desc 生成日期
+         * */
+        function Dateformat(fthis, fmt) {
+            var o = {
+                "M+": fthis.getMonth() + 1, //月份
+                "d+": fthis.getDate(), //日
+                "h+": fthis.getHours(), //小时
+                "m+": fthis.getMinutes(), //分
+                "s+": fthis.getSeconds(), //秒
+                "q+": Math.floor((fthis.getMonth() + 3) / 3), //季度
+                "S": fthis.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) {
+                fmt = fmt.replace(RegExp.$1, (fthis.getFullYear() + "").substr(4 - RegExp.$1.length));
+            }
+            for (var k in o) {
+                if (new RegExp("(" + k + ")").test(fmt)) {
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                }
+            }
+            return fmt;
+        }
+
+        function getCookie(name) {
+            var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+            if (arr = document.cookie.match(reg))
+                return (arr[2]);
+            else
+                return null;
+        }
+
+        /*
+         * @desc 生成水印
+         * */
+        function watermark(settings) {
+            //默认设置
+            var defaultSettings = {
+                watermark_txt: "text",
+                watermark_x: 20, //水印起始位置x轴坐标
+                watermark_y: 20, //水印起始位置Y轴坐标
+                watermark_rows: 1000, //水印行数
+                watermark_cols: 2, //水印列数
+                watermark_x_space: 1, //水印x轴间隔
+                watermark_y_space: 1, //水印y轴间隔
+                watermark_color: '#000000', //水印字体颜色
+                watermark_alpha: 0.3, //水印透明度
+                watermark_fontsize: '14px', //水印字体大小
+                watermark_font: '微软雅黑', //水印字体
+                watermark_width: 160, //水印宽度
+                watermark_height: 120, //水印长度
+                watermark_angle: 10 //水印倾斜度数
+            };
+            //采用配置项替换默认值，作用类似jquery.extend
+            if (arguments.length === 1 && typeof arguments[0] === "object") {
+                var src = arguments[0] || {};
+                for (key in src) {
+                    if (src[key] && defaultSettings[key] && src[key] === defaultSettings[key])
+                        continue;
+                    else if (src[key])
+                        defaultSettings[key] = src[key];
+                }
+            }
+
+            var oTemp = document.createDocumentFragment();
+
+            //获取页面最大宽度
+            var page_width = Math.max(document.body.scrollWidth, document.body.clientWidth);
+            //获取页面最大长度
+            var page_height = Math.max(document.body.scrollHeight, document.body.clientHeight);
+
+            //如果将水印列数设置为0，或水印列数设置过大，超过页面最大宽度，则重新计算水印列数和水印x轴间隔
+            if (defaultSettings.watermark_cols == 0 ||
+                (parseInt(defaultSettings.watermark_x +
+                        defaultSettings.watermark_width * defaultSettings.watermark_cols +
+                        defaultSettings.watermark_x_space * (defaultSettings.watermark_cols - 1)) >
+                    page_width)) {
+                defaultSettings.watermark_cols =
+                    parseInt((page_width -
+                            defaultSettings.watermark_x +
+                            defaultSettings.watermark_x_space) /
+                        (defaultSettings.watermark_width +
+                            defaultSettings.watermark_x_space));
+                defaultSettings.watermark_x_space =
+                    parseInt((page_width -
+                            defaultSettings.watermark_x -
+                            defaultSettings.watermark_width *
+                            defaultSettings.watermark_cols) /
+                        (defaultSettings.watermark_cols - 1));
+            }
+            //如果将水印行数设置为0，或水印行数设置过大，超过页面最大长度，则重新计算水印行数和水印y轴间隔
+            if (defaultSettings.watermark_rows == 0 ||
+                (parseInt(defaultSettings.watermark_y +
+                        defaultSettings.watermark_height * defaultSettings.watermark_rows +
+                        defaultSettings.watermark_y_space * (defaultSettings.watermark_rows - 1)) >
+                    page_height)) {
+                defaultSettings.watermark_rows =
+                    parseInt((defaultSettings.watermark_y_space +
+                            page_height - defaultSettings.watermark_y) /
+                        (defaultSettings.watermark_height + defaultSettings.watermark_y_space));
+                defaultSettings.watermark_y_space =
+                    parseInt((page_height -
+                            defaultSettings.watermark_y -
+                            defaultSettings.watermark_height *
+                            defaultSettings.watermark_rows) /
+                        (defaultSettings.watermark_rows - 1));
+            }
+            var x;
+            var y;
+            for (var i = 0; i < defaultSettings.watermark_rows; i++) {
+                y = defaultSettings.watermark_y + (defaultSettings.watermark_y_space + defaultSettings.watermark_height) * i;
+                for (var j = 0; j < defaultSettings.watermark_cols; j++) {
+                    x = defaultSettings.watermark_x + (defaultSettings.watermark_width + defaultSettings.watermark_x_space) * j;
+
+                    var mask_div = document.createElement('div');
+                    mask_div.id = 'mask_div' + i + j;
+                    mask_div.appendChild(document.createTextNode(defaultSettings.watermark_txt));
+                    //设置水印div倾斜显示
+                    mask_div.style.webkitTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                    mask_div.style.MozTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                    mask_div.style.msTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                    mask_div.style.OTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                    mask_div.style.transform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                    mask_div.style.visibility = "";
+                    mask_div.style.position = "absolute";
+                    mask_div.style.left = x + 'px';
+                    mask_div.style.top = y + 'px';
+                    mask_div.style.overflow = "hidden";
+                    mask_div.style.zIndex = "1";
+                    //mask_div.style.border="solid #eee 1px";
+                    mask_div.style.opacity = defaultSettings.watermark_alpha;
+                    mask_div.style.fontSize = defaultSettings.watermark_fontsize;
+                    mask_div.style.fontFamily = defaultSettings.watermark_font;
+                    mask_div.style.color = defaultSettings.watermark_color;
+                    mask_div.style.textAlign = "left";
+                    mask_div.style.width = defaultSettings.watermark_width + 'px';
+                    mask_div.style.height = defaultSettings.watermark_height + 'px';
+                    mask_div.style.display = "block";
+                    oTemp.appendChild(mask_div);
+                };
+            };
+            document.body.appendChild(oTemp);
+        }
+    </script>
+
+</body>
+
+</html>

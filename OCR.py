@@ -22,7 +22,7 @@ def general_ocr_v3(image_base64):
                          data=json.dumps(body),
                          verify=False)
     result = json.loads(resp.text)
-    print(result)
+    # print(result)
     resp.close()
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~完成~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     return result
