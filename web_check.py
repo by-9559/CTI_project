@@ -14,7 +14,7 @@ def query_licence(SCID:str):
         "lb":"SC"
     }
     req = requests.get(url,params=params,headers=headers)
-    
+
     df = pd.read_html(req.text)
     if not df :
         return False
@@ -34,7 +34,7 @@ def food_standards(standards):
     return result
 
 
-food_standards("SB/T 10347")
+# food_standards("SB/T 10347")
 # query_licence('SC12744030701096')
 # html = etree.HTML(req.text)
 # result = html.xpath('/html/body/div[2]/div/table/tbody/tr[5]/td/text()')    # 生产地址
