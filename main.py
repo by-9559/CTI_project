@@ -15,11 +15,10 @@ import web_check
 
 log = loging.log()
 
-if os.path.exists(str(r'%s'%(os.path.join(os.path.expanduser("~"), 'Desktop') + "\\screenshot\\"))):
-    shutil.rmtree(str(r'%s'%(os.path.join(os.path.expanduser("~"), 'Desktop') + "\\screenshot\\")))
-
-
 PATHDIR = os.path.join(os.path.expanduser("~"), 'Desktop') + "\\screenshot\\"
+
+if os.path.exists(PATHDIR):
+    shutil.rmtree(PATHDIR)
 
 TABLIST =   {
         "净含量":"D6",
