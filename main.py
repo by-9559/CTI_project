@@ -15,7 +15,8 @@ import web_check
 
 log = loging.log()
 
-PATHDIR = os.path.join(os.path.expanduser("~"), 'Desktop') + "\\screenshot\\"
+PATHDIR = os.path.join(os.path.expanduser("~"), 'Desktop') + "/screenshot/"
+PATHDIR =  "screenshot/"
 
 if os.path.exists(PATHDIR):
     shutil.rmtree(PATHDIR)
@@ -111,7 +112,7 @@ class __excel:
     def in_pic(self):
         for i in os.listdir(self.imgdir):
             cell = TABLIST[i.split(".")[0]]
-            filename = self.imgdir +"\\"+ i
+            filename = self.imgdir +"/"+ i
             imgSize = tu.open(filename).size
             img = Image(filename)
             newsize = (imgSize[0]*(150/imgSize[0]), imgSize[1]*(150/imgSize[0]))
@@ -157,14 +158,16 @@ class __excel:
         unit = "食品生产许可证编号"  
         if productdict[unit] :
             df = web_check.query_licence(productdict[unit][0])
-            log.warning(df)
-            log.warning(productdict["地址"])
-            log.warning(df["生产地址"])
-
-            if df and [i for i in productdict["地址"] if i in df["生产地址"]]:
-                ws[new_form[unit]] = "符合"
+            if type(df)  == dict:
+                log.warning(productdict["地址"])
+                log.warning(df["生产地址"])
+                if df and [i for i in productdict["地址"] if i in df["生产地址"]]:
+                    ws[new_form[unit]] = "符合"
+                else:
+                    ws[new_form[unit]] = "不符合"
             else:
-                ws[new_form[unit]] = "不符合"
+                log.error(str(df) + "----------"+str(type(df)))
+                ws[new_form[unit]] = "未查询到许可证信息"
 
 
         unit = "产品标准代号"  

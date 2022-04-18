@@ -14,10 +14,10 @@ def query_licence(SCID:str):
         "lb":"SC"
     }
     req = requests.get(url,params=params,headers=headers)
-
-    df = pd.read_html(req.text)
-    if not df :
-        return False
+    try:
+        df = pd.read_html(req.text)
+    except ValueError as e:
+        return e
     return {i[0]:i[1] for i in list(df[0].values)}
 
 
