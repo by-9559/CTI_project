@@ -97,7 +97,7 @@ class Img_ocr:
                 img = self.img[int(xy[0][1]-xy[1][1]/2):int(xy[0][1]+xy[1][1]/2),int(xy[0][0]-xy[1][0]/2):int(xy[0][0]+xy[1][0]/2)]
                 cv2.imencode('.jpg',img)[1].tofile(os.path.join(self.img_dir,i+".jpg"))
                 log.info(f"{i}   标签截取成功")
-        return product
+        self.product = product
 
 
 
@@ -219,8 +219,8 @@ if __name__ == '__main__':
         if img_path.split(".")[-1] in ['jpg','png']:
             log.info(f"~~~~~~~~~~~任务< {img_path} >开始~~~~~~~~~~~")
             ll = Img_ocr(dir+img_path)
-            product = ll.main()
-            if product:
-                __excel(ll.img_dir,product,ll.description).main()
+            ll.main()
+            if not ll.exp:
+                __excel(ll.img_dir,ll.product,ll.description).main()
     log.error("未处理图片: "+ ",  ".join(ll.errlist))
     logging.shutdown()
