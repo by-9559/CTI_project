@@ -43,10 +43,7 @@ class Img_ocr:
             self.path,
             self.file_name
         )= os.path.split(img_path)
-        with open(img_path, 'rb') as f:
-            base64_data = base64.b64encode(f.read())
-            res = bytes.decode(base64_data)
-        self.img_result = general_ocr_v3(res) 
+        self.img_result = general_ocr_v3(img_path) 
         if 'details' in self.img_result:
             self.img_dir = PATHDIR+self.file_name.split('.')[0]
             os.makedirs(self.img_dir)
